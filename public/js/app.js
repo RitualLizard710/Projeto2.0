@@ -4,11 +4,9 @@
 
 const API = "https://reforco-escolar-wr7m.onrender.com/api";
 
-// Token JWT salvo após login
 let tokenJWT = localStorage.getItem("token") || null;
 let nomeUsuario = localStorage.getItem("nomeUsuario") || "";
 
-// Cabeçalho padrão com token para todas as requisições autenticadas
 function headersAuth() {
     return {
         "Content-Type": "application/json",
@@ -16,20 +14,12 @@ function headersAuth() {
     };
 }
 
-// Função genérica para chamadas à API
 async function api(metodo, rota, corpo = null) {
-    const opcoes = {
-        method: metodo,
-        headers: headersAuth()
-    };
+    const opcoes = { method: metodo, headers: headersAuth() };
     if (corpo) opcoes.body = JSON.stringify(corpo);
-
     const resposta = await fetch(`${API}${rota}`, opcoes);
     const dados = await resposta.json();
-
-    if (!resposta.ok) {
-        throw new Error(dados.erro || "Erro na requisição.");
-    }
+    if (!resposta.ok) throw new Error(dados.erro || "Erro na requisição.");
     return dados;
 }
 
@@ -73,13 +63,60 @@ function mostrarMensagem(texto, tipo = "sucesso") {
 }
 
 // ============================================================
+// BUSCA DE ALUNO COM AUTOCOMPLETE
+// ============================================================
+
+function configurarBuscaAluno(inputId, selectId) {
+    const input = document.getElementById(inputId);
+    const select = document.getElementById(selectId);
+    if (!input || !select) return;
+
+    // Esconde o select nativo e cria lista de sugestões
+    select.style.display = "none";
+
+    const lista = document.createElement("div");
+    lista.id = inputId + "_lista";
+    lista.style.cssText = "border:1px solid #d1d5db; border-radius:11px; background:#fff; max-height:200px; overflow-y:auto; display:none; position:absolute; z-index:100; width:100%;";
+    input.parentElement.style.position = "relative";
+    input.parentElement.appendChild(lista);
+
+    function atualizarLista() {
+        const texto = input.value.toLowerCase();
+        lista.innerHTML = "";
+        let encontrou = false;
+
+        Array.from(select.options).forEach(op => {
+            if (op.text.toLowerCase().includes(texto)) {
+                encontrou = true;
+                const item = document.createElement("div");
+                item.textContent = op.text;
+                item.style.cssText = "padding:12px 16px; cursor:pointer; font-size:16px;";
+                item.addEventListener("mouseenter", () => item.style.background = "#f3f4f6");
+                item.addEventListener("mouseleave", () => item.style.background = "#fff");
+                item.addEventListener("mousedown", () => {
+                    select.value = op.value;
+                    input.value = op.text;
+                    lista.style.display = "none";
+                });
+                lista.appendChild(item);
+            }
+        });
+
+        lista.style.display = encontrou ? "block" : "none";
+    }
+
+    input.addEventListener("input", atualizarLista);
+    input.addEventListener("focus", atualizarLista);
+    input.addEventListener("blur", () => setTimeout(() => { lista.style.display = "none"; }, 200));
+}
+
+// ============================================================
 // AUTENTICAÇÃO
 // ============================================================
 
 async function entrar() {
     const email = obterValor("emailLogin");
     const senha = obterValor("senhaLogin");
-
     try {
         const dados = await fetch(`${API}/usuarios/login`, {
             method: "POST",
@@ -87,21 +124,14 @@ async function entrar() {
             body: JSON.stringify({ email, senha })
         });
         const resposta = await dados.json();
-
-        if (!dados.ok) {
-            alert(resposta.erro || "Email ou senha inválidos.");
-            return;
-        }
-
+        if (!dados.ok) { alert(resposta.erro || "Email ou senha inválidos."); return; }
         tokenJWT = resposta.token;
         nomeUsuario = resposta.nome;
         localStorage.setItem("token", tokenJWT);
         localStorage.setItem("nomeUsuario", nomeUsuario);
-
         document.getElementById("nomeUsuarioTopo").textContent = nomeUsuario;
         document.getElementById("telaLogin").classList.add("oculto");
         document.getElementById("aplicacao").classList.remove("oculto");
-
         carregarDashboard();
     } catch (err) {
         alert("Erro ao conectar com o servidor.");
@@ -112,12 +142,7 @@ async function registrar() {
     const nome  = obterValor("nomeCadastro");
     const email = obterValor("emailCadastro");
     const senha = obterValor("senhaCadastro");
-
-    if (!nome || !email || !senha) {
-        alert("Preencha todos os campos.");
-        return;
-    }
-
+    if (!nome || !email || !senha) { alert("Preencha todos os campos."); return; }
     try {
         const dados = await fetch(`${API}/usuarios/registrar`, {
             method: "POST",
@@ -125,12 +150,7 @@ async function registrar() {
             body: JSON.stringify({ nome, email, senha })
         });
         const resposta = await dados.json();
-
-        if (!dados.ok) {
-            alert(resposta.erro || "Erro ao registrar.");
-            return;
-        }
-
+        if (!dados.ok) { alert(resposta.erro || "Erro ao registrar."); return; }
         alert("Conta criada com sucesso! Faça login.");
         voltarLogin();
     } catch (err) {
@@ -156,7 +176,6 @@ function sair() {
     document.getElementById("telaLogin").classList.remove("oculto");
 }
 
-// Verifica se já está logado ao carregar a página
 window.addEventListener("load", () => {
     if (tokenJWT) {
         document.getElementById("nomeUsuarioTopo").textContent = nomeUsuario;
@@ -184,7 +203,6 @@ function mostrarInicio() { carregarDashboard(); }
 async function carregarDashboard() {
     try {
         const dados = await api("GET", "/dashboard");
-
         const linhasProximos = dados.proximosAtendimentos.length
             ? dados.proximosAtendimentos.map(a => `
                 <tr>
@@ -198,7 +216,6 @@ async function carregarDashboard() {
         renderizarConteudo(`
             <h1>Dashboard</h1>
             <p class="subtitulo">Visão geral do sistema.</p>
-
             <div class="grade-cards">
                 <div class="card-info">
                     <i class="fa-solid fa-user-graduate fa-2x"></i>
@@ -221,7 +238,6 @@ async function carregarDashboard() {
                     <div class="texto-card">Atendimentos Agendados</div>
                 </div>
             </div>
-
             <h2 class="titulo-rapido">Ações Rápidas</h2>
             <div class="grade-acoes">
                 <button class="botao-azul" onclick="abrirCadastroAluno()">Cadastrar Aluno</button>
@@ -229,13 +245,10 @@ async function carregarDashboard() {
                 <button class="botao-azul" onclick="abrirMatricula()">Nova Matrícula</button>
                 <button class="botao-azul" onclick="abrirAtendimento()">Agendar Atendimento</button>
             </div>
-
             <div class="painel">
                 <div class="cabecalho-painel">Próximos Atendimentos</div>
                 <table>
-                    <thead>
-                        <tr><th>Aluno</th><th>Data</th><th>Horário</th></tr>
-                    </thead>
+                    <thead><tr><th>Aluno</th><th>Data</th><th>Horário</th></tr></thead>
                     <tbody>${linhasProximos}</tbody>
                 </table>
             </div>
@@ -266,7 +279,6 @@ function dataParaInput(dataISO) {
 async function mostrarAlunos() {
     try {
         const alunos = await api("GET", "/alunos");
-
         const linhas = alunos.length
             ? alunos.map(aluno => `
                 <tr>
@@ -282,7 +294,6 @@ async function mostrarAlunos() {
         renderizarConteudo(`
             <h1>Alunos</h1>
             <p class="subtitulo">Gerenciamento de alunos cadastrados.</p>
-
             <div class="card-filtros">
                 <div class="campo-busca">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -296,12 +307,9 @@ async function mostrarAlunos() {
                 </select>
                 <button class="botao-azul" onclick="abrirCadastroAluno()">Cadastrar Aluno</button>
             </div>
-
             <div class="card-tabela">
                 <table id="tabelaAlunos">
-                    <thead>
-                        <tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Nível</th><th>Ações</th></tr>
-                    </thead>
+                    <thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Nível</th><th>Ações</th></tr></thead>
                     <tbody>${linhas}</tbody>
                 </table>
             </div>
@@ -315,7 +323,6 @@ function abrirCadastroAluno() {
     renderizarConteudo(`
         <h1>Cadastrar Aluno</h1>
         <p class="subtitulo">Preencha os dados do aluno.</p>
-
         <div class="card-formulario">
             <div class="grade-formulario">
                 <div>
@@ -345,7 +352,7 @@ function abrirCadastroAluno() {
             </div>
             <div class="acoes-formulario">
                 <button class="botao-cinza" onclick="mostrarAlunos()">Cancelar</button>
-                <button class="botao-azul"  onclick="salvarAluno()">Salvar</button>
+                <button class="botao-azul" onclick="salvarAluno()">Salvar</button>
             </div>
         </div>
     `);
@@ -357,12 +364,7 @@ async function salvarAluno() {
     const telefone    = obterValor("telefoneAluno");
     const nivel       = obterValor("nivelAluno");
     const observacoes = obterValor("observacoesAluno");
-
-    if (!nome || !email) {
-        alert("Nome e Email são obrigatórios.");
-        return;
-    }
-
+    if (!nome || !email) { alert("Nome e Email são obrigatórios."); return; }
     try {
         await api("POST", "/alunos", { nome, email, telefone, nivel, observacoes });
         mostrarMensagem("Aluno cadastrado com sucesso!");
@@ -376,11 +378,9 @@ async function salvarAluno() {
 async function editarAluno(id) {
     try {
         const aluno = await api("GET", `/alunos/${id}`);
-
         renderizarConteudo(`
             <h1>Editar Aluno</h1>
             <p class="subtitulo">Atualize os dados do aluno.</p>
-
             <div class="card-formulario">
                 <div class="grade-formulario">
                     <div>
@@ -398,9 +398,9 @@ async function editarAluno(id) {
                     <div>
                         <label>Nível</label>
                         <select id="nivelAluno">
-                            <option ${aluno.nivel === "Básico"        ? "selected" : ""}>Básico</option>
+                            <option ${aluno.nivel === "Básico" ? "selected" : ""}>Básico</option>
                             <option ${aluno.nivel === "Intermediário" ? "selected" : ""}>Intermediário</option>
-                            <option ${aluno.nivel === "Avançado"      ? "selected" : ""}>Avançado</option>
+                            <option ${aluno.nivel === "Avançado" ? "selected" : ""}>Avançado</option>
                         </select>
                     </div>
                     <div class="linha-inteira">
@@ -410,7 +410,7 @@ async function editarAluno(id) {
                 </div>
                 <div class="acoes-formulario">
                     <button class="botao-cinza" onclick="mostrarAlunos()">Cancelar</button>
-                    <button class="botao-azul"  onclick="salvarEdicaoAluno(${id})">Salvar Alterações</button>
+                    <button class="botao-azul" onclick="salvarEdicaoAluno(${id})">Salvar Alterações</button>
                 </div>
             </div>
         `);
@@ -425,7 +425,6 @@ async function salvarEdicaoAluno(id) {
     const telefone    = obterValor("telefoneAluno");
     const nivel       = obterValor("nivelAluno");
     const observacoes = obterValor("observacoesAluno");
-
     try {
         await api("PUT", `/alunos/${id}`, { nome, email, telefone, nivel, observacoes });
         mostrarMensagem("Aluno atualizado com sucesso!");
@@ -453,7 +452,6 @@ async function excluirAluno(id) {
 async function mostrarCursos() {
     try {
         const cursos = await api("GET", "/cursos");
-
         const linhas = cursos.length
             ? cursos.map(curso => {
                 const lotado = curso.vagas_ocupadas >= curso.vagas_totais;
@@ -473,7 +471,6 @@ async function mostrarCursos() {
         renderizarConteudo(`
             <h1>Cursos</h1>
             <p class="subtitulo">Gerenciamento de cursos.</p>
-
             <div class="card-filtros">
                 <div class="campo-busca">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -486,12 +483,9 @@ async function mostrarCursos() {
                 </select>
                 <button class="botao-azul" onclick="abrirCadastroCurso()">Cadastrar Curso</button>
             </div>
-
             <div class="card-tabela">
                 <table id="tabelaCursos">
-                    <thead>
-                        <tr><th>Curso</th><th>Nível</th><th>Vagas</th><th>Ocupadas</th><th>Status</th><th>Ações</th></tr>
-                    </thead>
+                    <thead><tr><th>Curso</th><th>Nível</th><th>Vagas</th><th>Ocupadas</th><th>Status</th><th>Ações</th></tr></thead>
                     <tbody>${linhas}</tbody>
                 </table>
             </div>
@@ -505,7 +499,6 @@ function abrirCadastroCurso() {
     renderizarConteudo(`
         <h1>Cadastrar Curso</h1>
         <p class="subtitulo">Cadastro de novo curso.</p>
-
         <div class="card-formulario">
             <div class="grade-formulario">
                 <div>
@@ -535,7 +528,7 @@ function abrirCadastroCurso() {
             </div>
             <div class="acoes-formulario">
                 <button class="botao-cinza" onclick="mostrarCursos()">Cancelar</button>
-                <button class="botao-azul"  onclick="salvarCurso()">Salvar</button>
+                <button class="botao-azul" onclick="salvarCurso()">Salvar</button>
             </div>
         </div>
     `);
@@ -547,12 +540,7 @@ async function salvarCurso() {
     const vagas_totais  = parseInt(obterValor("vagasCurso"));
     const carga_horaria = obterValor("cargaCurso");
     const descricao     = obterValor("descricaoCurso");
-
-    if (!nome || isNaN(vagas_totais) || vagas_totais <= 0) {
-        alert("Nome e vagas são obrigatórios.");
-        return;
-    }
-
+    if (!nome || isNaN(vagas_totais) || vagas_totais <= 0) { alert("Nome e vagas são obrigatórios."); return; }
     try {
         await api("POST", "/cursos", { nome, nivel, vagas_totais, carga_horaria, descricao });
         mostrarMensagem("Curso cadastrado com sucesso!");
@@ -566,11 +554,9 @@ async function salvarCurso() {
 async function editarCurso(id) {
     try {
         const curso = await api("GET", `/cursos/${id}`);
-
         renderizarConteudo(`
             <h1>Editar Curso</h1>
             <p class="subtitulo">Atualize os dados do curso.</p>
-
             <div class="card-formulario">
                 <div class="grade-formulario">
                     <div>
@@ -580,9 +566,9 @@ async function editarCurso(id) {
                     <div>
                         <label>Nível *</label>
                         <select id="nivelCurso">
-                            <option ${curso.nivel === "Básico"        ? "selected" : ""}>Básico</option>
+                            <option ${curso.nivel === "Básico" ? "selected" : ""}>Básico</option>
                             <option ${curso.nivel === "Intermediário" ? "selected" : ""}>Intermediário</option>
-                            <option ${curso.nivel === "Avançado"      ? "selected" : ""}>Avançado</option>
+                            <option ${curso.nivel === "Avançado" ? "selected" : ""}>Avançado</option>
                         </select>
                     </div>
                     <div>
@@ -600,7 +586,7 @@ async function editarCurso(id) {
                 </div>
                 <div class="acoes-formulario">
                     <button class="botao-cinza" onclick="mostrarCursos()">Cancelar</button>
-                    <button class="botao-azul"  onclick="salvarEdicaoCurso(${id})">Salvar Alterações</button>
+                    <button class="botao-azul" onclick="salvarEdicaoCurso(${id})">Salvar Alterações</button>
                 </div>
             </div>
         `);
@@ -615,7 +601,6 @@ async function salvarEdicaoCurso(id) {
     const vagas_totais  = parseInt(obterValor("vagasCurso"));
     const carga_horaria = obterValor("cargaCurso");
     const descricao     = obterValor("descricaoCurso");
-
     try {
         await api("PUT", `/cursos/${id}`, { nome, nivel, vagas_totais, carga_horaria, descricao });
         mostrarMensagem("Curso atualizado com sucesso!");
@@ -643,7 +628,6 @@ async function excluirCurso(id) {
 async function mostrarMatriculas() {
     try {
         const matriculas = await api("GET", "/matriculas");
-
         const linhas = matriculas.length
             ? matriculas.map(m => `
                 <tr>
@@ -659,7 +643,6 @@ async function mostrarMatriculas() {
         renderizarConteudo(`
             <h1>Matrículas</h1>
             <p class="subtitulo">Gerenciamento de matrículas.</p>
-
             <div class="card-filtros">
                 <div class="campo-busca">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -668,12 +651,9 @@ async function mostrarMatriculas() {
                 <div></div>
                 <button class="botao-azul" onclick="abrirMatricula()">Nova Matrícula</button>
             </div>
-
             <div class="card-tabela">
                 <table id="tabelaMatriculas">
-                    <thead>
-                        <tr><th>Aluno</th><th>Curso</th><th>Data</th><th>Status</th><th>Ações</th></tr>
-                    </thead>
+                    <thead><tr><th>Aluno</th><th>Curso</th><th>Data</th><th>Status</th><th>Ações</th></tr></thead>
                     <tbody>${linhas}</tbody>
                 </table>
             </div>
@@ -689,7 +669,6 @@ async function abrirMatricula() {
             api("GET", "/alunos"),
             api("GET", "/cursos")
         ]);
-
         if (!alunos.length) { alert("Cadastre um aluno primeiro."); return; }
         if (!cursos.length) { alert("Cadastre um curso primeiro."); return; }
 
@@ -699,13 +678,12 @@ async function abrirMatricula() {
         renderizarConteudo(`
             <h1>Nova Matrícula</h1>
             <p class="subtitulo">Vincular aluno a um curso.</p>
-
             <div class="card-formulario">
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                       <input type="text" id="buscaAlunoMatricula" placeholder="Digite para filtrar alunos...">
-                        <select id="alunoMatricula">${opcoesAlunos}</select>
+                        <input type="text" id="buscaAlunoMatricula" placeholder="Digite o nome do aluno...">
+                        <select id="alunoMatricula" style="display:none">${opcoesAlunos}</select>
                     </div>
                     <div>
                         <label>Curso <span class="obrigatorio">*</span></label>
@@ -718,15 +696,13 @@ async function abrirMatricula() {
                 </div>
                 <div class="acoes-formulario">
                     <button class="botao-cinza" onclick="mostrarMatriculas()">Cancelar</button>
-                    <button class="botao-azul"  onclick="salvarMatricula()">Salvar</button>
+                    <button class="botao-azul" onclick="salvarMatricula()">Salvar</button>
                 </div>
             </div>
         `);
 
-        document.getElementById("buscaAlunoMatricula").addEventListener("input", function() {
-    filtrarSelectAluno("buscaAlunoMatricula", "alunoMatricula");
-});
-        
+        configurarBuscaAluno("buscaAlunoMatricula", "alunoMatricula");
+
     } catch (err) {
         alert("Erro ao carregar dados.");
     }
@@ -736,12 +712,7 @@ async function salvarMatricula() {
     const aluno_id       = obterValor("alunoMatricula");
     const curso_id       = obterValor("cursoMatricula");
     const data_matricula = obterValor("dataMatricula");
-
-    if (!aluno_id || !curso_id || !data_matricula) {
-        alert("Preencha todos os campos.");
-        return;
-    }
-
+    if (!aluno_id || !curso_id || !data_matricula) { alert("Preencha todos os campos."); return; }
     try {
         await api("POST", "/matriculas", { aluno_id, curso_id, data_matricula });
         mostrarMensagem("Matrícula realizada com sucesso!");
@@ -759,7 +730,6 @@ async function editarMatricula(id) {
             api("GET", "/alunos"),
             api("GET", "/cursos")
         ]);
-
         const m = matriculas.find(x => x.id === id);
         if (!m) { alert("Matrícula não encontrada."); return; }
 
@@ -769,7 +739,6 @@ async function editarMatricula(id) {
         renderizarConteudo(`
             <h1>Editar Matrícula</h1>
             <p class="subtitulo">Atualize os dados da matrícula.</p>
-
             <div class="card-formulario">
                 <div class="grade-formulario">
                     <div>
@@ -787,15 +756,10 @@ async function editarMatricula(id) {
                 </div>
                 <div class="acoes-formulario">
                     <button class="botao-cinza" onclick="mostrarMatriculas()">Cancelar</button>
-                    <button class="botao-azul"  onclick="salvarEdicaoMatricula(${id})">Salvar Alterações</button>
+                    <button class="botao-azul" onclick="salvarEdicaoMatricula(${id})">Salvar Alterações</button>
                 </div>
             </div>
         `);
-
-        document.getElementById("buscaAlunoAtendimento").addEventListener("input", function() {
-    filtrarSelectAluno("buscaAlunoAtendimento", "alunoAtendimento");
-});
-        
     } catch (err) {
         alert("Erro ao carregar matrícula.");
     }
@@ -804,7 +768,6 @@ async function editarMatricula(id) {
 async function salvarEdicaoMatricula(id) {
     const curso_id       = obterValor("cursoMatricula");
     const data_matricula = obterValor("dataMatricula");
-
     try {
         await api("PUT", `/matriculas/${id}`, { curso_id, data_matricula });
         mostrarMensagem("Matrícula atualizada com sucesso!");
@@ -832,7 +795,6 @@ async function excluirMatricula(id) {
 async function mostrarAtendimentos() {
     try {
         const atendimentos = await api("GET", "/atendimentos");
-
         const linhas = atendimentos.length
             ? atendimentos.map(a => {
                 const cls = a.status === "Realizado" ? "realizado" : a.status === "Cancelado" ? "cancelado" : "agendado";
@@ -852,7 +814,6 @@ async function mostrarAtendimentos() {
         renderizarConteudo(`
             <h1>Atendimentos</h1>
             <p class="subtitulo">Gerenciamento de atendimentos.</p>
-
             <div class="card-filtros">
                 <div class="campo-busca">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -866,12 +827,9 @@ async function mostrarAtendimentos() {
                 </select>
                 <button class="botao-azul" onclick="abrirAtendimento()">Agendar Atendimento</button>
             </div>
-
             <div class="card-tabela">
                 <table id="tabelaAtendimentos">
-                    <thead>
-                        <tr><th>Aluno</th><th>Data</th><th>Horário</th><th>Motivo</th><th>Status</th><th>Ações</th></tr>
-                    </thead>
+                    <thead><tr><th>Aluno</th><th>Data</th><th>Horário</th><th>Motivo</th><th>Status</th><th>Ações</th></tr></thead>
                     <tbody>${linhas}</tbody>
                 </table>
             </div>
@@ -891,13 +849,12 @@ async function abrirAtendimento() {
         renderizarConteudo(`
             <h1>Agendar Atendimento</h1>
             <p class="subtitulo">Novo atendimento.</p>
-
             <div class="card-formulario">
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                        <input type="text" id="buscaAlunoAtendimento" placeholder="Digite para filtrar alunos...">
-                        <select id="alunoAtendimento">${opcoesAlunos}</select>
+                        <input type="text" id="buscaAlunoAtendimento" placeholder="Digite o nome do aluno...">
+                        <select id="alunoAtendimento" style="display:none">${opcoesAlunos}</select>
                     </div>
                     <div>
                         <label>Data <span class="obrigatorio">*</span></label>
@@ -922,10 +879,13 @@ async function abrirAtendimento() {
                 </div>
                 <div class="acoes-formulario">
                     <button class="botao-cinza" onclick="mostrarAtendimentos()">Cancelar</button>
-                    <button class="botao-azul"  onclick="salvarAtendimento()">Salvar</button>
+                    <button class="botao-azul" onclick="salvarAtendimento()">Salvar</button>
                 </div>
             </div>
         `);
+
+        configurarBuscaAluno("buscaAlunoAtendimento", "alunoAtendimento");
+
     } catch (err) {
         alert("Erro ao carregar dados.");
     }
@@ -937,12 +897,7 @@ async function salvarAtendimento() {
     const horario          = obterValor("horaAtendimento");
     const motivo           = obterValor("motivoAtendimento");
     const status           = obterValor("statusAtendimento");
-
-    if (!aluno_id || !data_atendimento || !horario) {
-        alert("Aluno, data e horário são obrigatórios.");
-        return;
-    }
-
+    if (!aluno_id || !data_atendimento || !horario) { alert("Aluno, data e horário são obrigatórios."); return; }
     try {
         await api("POST", "/atendimentos", { aluno_id, data_atendimento, horario, motivo, status });
         mostrarMensagem("Atendimento agendado com sucesso!");
@@ -959,7 +914,6 @@ async function editarAtendimento(id) {
             api("GET", "/atendimentos"),
             api("GET", "/alunos")
         ]);
-
         const a = atendimentos.find(x => x.id === id);
         if (!a) { alert("Atendimento não encontrado."); return; }
 
@@ -968,7 +922,6 @@ async function editarAtendimento(id) {
         renderizarConteudo(`
             <h1>Editar Atendimento</h1>
             <p class="subtitulo">Atualize os dados do atendimento.</p>
-
             <div class="card-formulario">
                 <div class="grade-formulario">
                     <div>
@@ -986,7 +939,7 @@ async function editarAtendimento(id) {
                     <div>
                         <label>Status</label>
                         <select id="statusAtendimento">
-                            <option ${a.status === "Agendado"  ? "selected" : ""}>Agendado</option>
+                            <option ${a.status === "Agendado" ? "selected" : ""}>Agendado</option>
                             <option ${a.status === "Realizado" ? "selected" : ""}>Realizado</option>
                             <option ${a.status === "Cancelado" ? "selected" : ""}>Cancelado</option>
                         </select>
@@ -998,7 +951,7 @@ async function editarAtendimento(id) {
                 </div>
                 <div class="acoes-formulario">
                     <button class="botao-cinza" onclick="mostrarAtendimentos()">Cancelar</button>
-                    <button class="botao-azul"  onclick="salvarEdicaoAtendimento(${id})">Salvar Alterações</button>
+                    <button class="botao-azul" onclick="salvarEdicaoAtendimento(${id})">Salvar Alterações</button>
                 </div>
             </div>
         `);
@@ -1013,7 +966,6 @@ async function salvarEdicaoAtendimento(id) {
     const horario          = obterValor("horaAtendimento");
     const status           = obterValor("statusAtendimento");
     const motivo           = obterValor("motivoAtendimento");
-
     try {
         await api("PUT", `/atendimentos/${id}`, { aluno_id, data_atendimento, horario, motivo, status });
         mostrarMensagem("Atendimento atualizado com sucesso!");
@@ -1035,7 +987,7 @@ async function excluirAtendimento(id) {
 }
 
 // ============================================================
-// FILTROS GENÉRICOS
+// FILTROS
 // ============================================================
 
 function filtrarTabela(inputId, tabelaId) {
@@ -1079,12 +1031,4 @@ function filtrarAtendimentos() {
         const passaStatus = status === "Todos" || celula.textContent.trim() === status;
         linha.style.display = passaBusca && passaStatus ? "" : "none";
     });
-
-    function filtrarSelectAluno(inputId, selectId) {
-    const texto = obterValor(inputId).toLowerCase();
-    const select = document.getElementById(selectId);
-    Array.from(select.options).forEach(op => {
-        op.style.display = op.text.toLowerCase().includes(texto) ? "" : "none";
-    });
-    }
 }
