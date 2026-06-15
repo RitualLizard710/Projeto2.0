@@ -886,7 +886,7 @@ async function abrirAtendimento() {
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                        <input type="text" id="buscaAlunoAtendimento" placeholder="Digite o nome do aluno..." oninput="filtrarSelectAluno('buscaAlunoAtendimento','alunoAtendimento')">
+                        <input type="text" id="buscaAlunoAtendimento" placeholder="Digite o nome do aluno..." oninput="filtrarSelectAluno('buscaAlunoAtendimento','alunoAtendimento')" style="width:100%; margin-bottom:8px; pointer-events:all; cursor:text;">
                         <select id="alunoAtendimento" size="4" style="margin-top:8px;">${opcoesAlunos}</select>
                     </div>
                     <div>
