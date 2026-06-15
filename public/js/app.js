@@ -704,7 +704,8 @@ async function abrirMatricula() {
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                        <select id="alunoMatricula">${opcoesAlunos}</select>
+                        <input type="text" id="buscaAlunoMatricula" placeholder="Digite o nome do aluno..." oninput="filtrarSelectAluno('buscaAlunoMatricula','alunoMatricula')">
+                        <select id="alunoMatricula" size="4" style="margin-top:8px;">${opcoesAlunos}</select>
                     </div>
                     <div>
                         <label>Curso <span class="obrigatorio">*</span></label>
@@ -885,7 +886,8 @@ async function abrirAtendimento() {
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                        <select id="alunoAtendimento">${opcoesAlunos}</select>
+                        <input type="text" id="buscaAlunoAtendimento" placeholder="Digite o nome do aluno..." oninput="filtrarSelectAluno('buscaAlunoAtendimento','alunoAtendimento')">
+                        <select id="alunoAtendimento" size="4" style="margin-top:8px;">${opcoesAlunos}</select>
                     </div>
                     <div>
                         <label>Data <span class="obrigatorio">*</span></label>
@@ -1067,4 +1069,12 @@ function filtrarAtendimentos() {
         const passaStatus = status === "Todos" || celula.textContent.trim() === status;
         linha.style.display = passaBusca && passaStatus ? "" : "none";
     });
+
+    function filtrarSelectAluno(inputId, selectId) {
+    const texto = obterValor(inputId).toLowerCase();
+    const select = document.getElementById(selectId);
+    Array.from(select.options).forEach(op => {
+        op.style.display = op.text.toLowerCase().includes(texto) ? "" : "none";
+    });
+    }
 }
