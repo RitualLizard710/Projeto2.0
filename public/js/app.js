@@ -704,7 +704,8 @@ async function abrirMatricula() {
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                       <select id="alunoMatricula">${opcoesAlunos}</select>
+                       <input type="text" id="buscaAlunoMatricula" placeholder="Digite para filtrar alunos...">
+                        <select id="alunoMatricula">${opcoesAlunos}</select>
                     </div>
                     <div>
                         <label>Curso <span class="obrigatorio">*</span></label>
@@ -721,6 +722,11 @@ async function abrirMatricula() {
                 </div>
             </div>
         `);
+
+        document.getElementById("buscaAlunoMatricula").addEventListener("input", function() {
+    filtrarSelectAluno("buscaAlunoMatricula", "alunoMatricula");
+});
+        
     } catch (err) {
         alert("Erro ao carregar dados.");
     }
@@ -785,6 +791,11 @@ async function editarMatricula(id) {
                 </div>
             </div>
         `);
+
+        document.getElementById("buscaAlunoAtendimento").addEventListener("input", function() {
+    filtrarSelectAluno("buscaAlunoAtendimento", "alunoAtendimento");
+});
+        
     } catch (err) {
         alert("Erro ao carregar matrícula.");
     }
@@ -885,6 +896,7 @@ async function abrirAtendimento() {
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
+                        <input type="text" id="buscaAlunoAtendimento" placeholder="Digite para filtrar alunos...">
                         <select id="alunoAtendimento">${opcoesAlunos}</select>
                     </div>
                     <div>
