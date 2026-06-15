@@ -1,1 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Educação e Reforço Estudantil da Bahia</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- ================================================== -->
+    <!-- TELA: LOGIN                                         -->
+    <!-- ================================================== -->
+    <section id="telaLogin" class="tela-login">
+        <div class="card-login">
+
+            <div class="topo-login">
+                <i class="fa-solid fa-graduation-cap fa-2x"></i>
+                <h1>Centro de Educação e Reforço Estudantil da Bahia</h1>
+            </div>
+
+            <div class="conteudo-login">
+                <h2>Entrar</h2>
+                <p>Faça login para acessar o sistema.</p>
+
+                <div class="campo-login">
+                    <label>Email</label>
+                    <input type="email" id="emailLogin">
+                </div>
+
+                <div class="campo-login">
+                    <label>Senha</label>
+                    <input type="password" id="senhaLogin">
+                </div>
+
+                <button class="botao-azul" onclick="entrar()">Entrar</button>
+                <br><br>
+                <button class="botao-contorno" onclick="abrirRegistro()">Criar Conta</button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- TELA: REGISTRO                                      -->
+    <!-- ================================================== -->
+    <section id="telaRegistro" class="tela-login oculto">
+        <div class="card-login">
+
+            <div class="topo-login">
+                <i class="fa-solid fa-user-plus fa-2x"></i>
+                <h1>Cadastro</h1>
+            </div>
+
+            <div class="conteudo-login">
+                <div class="campo-login">
+                    <label>Nome</label>
+                    <input type="text" id="nomeCadastro">
+                </div>
+
+                <div class="campo-login">
+                    <label>Email</label>
+                    <input type="email" id="emailCadastro">
+                </div>
+
+                <div class="campo-login">
+                    <label>Senha</label>
+                    <input type="password" id="senhaCadastro">
+                </div>
+
+                <button class="botao-azul" onclick="registrar()">Registrar</button>
+                <br><br>
+                <button class="botao-contorno" onclick="voltarLogin()">Voltar</button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- APLICAÇÃO PRINCIPAL                                 -->
+    <!-- ================================================== -->
+    <section id="aplicacao" class="aplicacao oculto">
+
+        <!-- Barra superior -->
+        <header class="topbar">
+            <div class="marca">
+                <i class="fa-solid fa-school"></i>
+                Centro de Educação e Reforço Estudantil da Bahia
+            </div>
+            <div style="display:flex; align-items:center; gap:16px;">
+                <div class="botao-perfil-topo">
+                    <div class="avatar-topo">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <span id="nomeUsuarioTopo">Administrador</span>
+                </div>
+                <button class="botao-sair" style="width:auto; margin:0; padding:0 16px;" onclick="sair()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sair
+                </button>
+            </div>
+        </header>
+
+        <!-- Menu lateral -->
+        <aside class="menu-lateral">
+            <button id="menuInicio" class="item-menu ativo"
+                onclick="ativarMenu('menuInicio'); mostrarInicio()">
+                <i class="fa-solid fa-house"></i>
+                <span>Início</span>
+            </button>
+
+            <button id="menuAlunos" class="item-menu"
+                onclick="ativarMenu('menuAlunos'); mostrarAlunos()">
+                <i class="fa-solid fa-user-graduate"></i>
+                <span>Alunos</span>
+            </button>
+
+            <button id="menuCursos" class="item-menu"
+                onclick="ativarMenu('menuCursos'); mostrarCursos()">
+                <i class="fa-solid fa-book"></i>
+                <span>Cursos</span>
+            </button>
+
+            <button id="menuMatriculas" class="item-menu"
+                onclick="ativarMenu('menuMatriculas'); mostrarMatriculas()">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>Matrículas</span>
+            </button>
+
+            <button id="menuAtendimentos" class="item-menu"
+                onclick="ativarMenu('menuAtendimentos'); mostrarAtendimentos()">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Atendimentos</span>
+            </button>
+        </aside>
+
+        <!-- Conteúdo principal -->
+        <main class="principal">
+            <div class="container" id="conteudo"></div>
+        </main>
+
+    </section>
+
+    <!-- Mensagem flutuante de feedback -->
+    <div id="mensagemFlutuante" class="mensagem-flutuante"></div>
+
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>
