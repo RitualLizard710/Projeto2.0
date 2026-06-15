@@ -23,7 +23,8 @@ router.post("/registrar", async (req, res) => {
 
         res.status(201).json({ mensagem: "Conta criada com sucesso!" });
     } catch (err) {
-        res.status(500).json({ erro: "Erro ao registrar usuário." });
+        console.error("ERRO REGISTRAR:", err);
+res.status(500).json({ erro: "Erro ao registrar usuário." });
     }
 });
 
@@ -56,7 +57,8 @@ router.post("/login", async (req, res) => {
 
         res.json({ token, nome: usuario.nome });
     } catch (err) {
-        res.status(500).json({ erro: "Erro ao fazer login." });
+        console.error("ERRO LOGIN:", err);
+res.status(500).json({ erro: "Erro ao fazer login." });
     }
 });
 
