@@ -704,7 +704,7 @@ async function abrirMatricula() {
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                        <input type="text" id="buscaAlunoMatricula" placeholder="Digite o nome do aluno..." oninput="filtrarSelectAluno('buscaAlunoMatricula','alunoMatricula')">
+                       <input type="text" id="buscaAlunoMatricula" placeholder="Digite o nome do aluno..." oninput="filtrarSelectAluno('buscaAlunoMatricula','alunoMatricula')">
                         <select id="alunoMatricula" size="4" style="margin-top:8px;">${opcoesAlunos}</select>
                     </div>
                     <div>
