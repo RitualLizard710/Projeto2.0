@@ -704,8 +704,7 @@ async function abrirMatricula() {
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                       <input type="text" id="buscaAlunoMatricula" placeholder="Digite o nome do aluno..." oninput="filtrarSelectAluno('buscaAlunoMatricula','alunoMatricula')">
-                        <select id="alunoMatricula" size="4" style="margin-top:8px;">${opcoesAlunos}</select>
+                       <select id="alunoMatricula">${opcoesAlunos}</select>
                     </div>
                     <div>
                         <label>Curso <span class="obrigatorio">*</span></label>
@@ -886,8 +885,7 @@ async function abrirAtendimento() {
                 <div class="grade-formulario">
                     <div>
                         <label>Aluno <span class="obrigatorio">*</span></label>
-                        <input type="text" id="buscaAlunoAtendimento" placeholder="Digite o nome do aluno..." oninput="filtrarSelectAluno('buscaAlunoAtendimento','alunoAtendimento')">
-                        <select id="alunoAtendimento" size="4" style="margin-top:8px;">${opcoesAlunos}</select>
+                        <select id="alunoAtendimento">${opcoesAlunos}</select>
                     </div>
                     <div>
                         <label>Data <span class="obrigatorio">*</span></label>
