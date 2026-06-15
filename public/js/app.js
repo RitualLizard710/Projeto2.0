@@ -2,7 +2,7 @@
 // CONFIGURAÇÃO DA API
 // ============================================================
 
-const API = "http://localhost:3000/api";
+const API = "https://reforco-escolar-wr7m.onrender.com/api";
 
 // Token JWT salvo após login
 let tokenJWT = localStorage.getItem("token") || null;
